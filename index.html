@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Деректер қоры — Тест</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --surface: #16213e;
+    --card: #1a1a2e;
+    --text: #eaeaea;
+    --muted: #8892a4;
+    --correct: #2ecc71;
+    --wrong: #e74c3c;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--primary);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  html { height: -webkit-fill-available; }
+  header {
+    width: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--text); }
+  .progress-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 400px;
+    margin-left: auto;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, #ff6b6b 100%);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  main {
+    width: 100%;
+    max-width: 720px;
+    padding: 40px 20px;
+    flex: 1;
+  }
+
+  /* WELCOME SCREEN */
+  #welcome {
+    text-align: center;
+    padding: 60px 0;
+  }
+  .welcome-icon {
+    font-size: 72px;
+    margin-bottom: 24px;
+    display: block;
+  }
+  #welcome h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  #welcome h1 span { color: var(--accent); }
+  #welcome p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 28px;
+    text-align: center;
+  }
+  .stat-box .num {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-box .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .btn-start {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 48px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(233,69,96,0.35);
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(233,69,96,0.45); }
+  .btn-start:active { transform: scale(0.97); }
+
+  /* QUIZ SCREEN */
+  #quiz { display: none; }
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .q-num {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .q-score {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .q-text {
+    font-size: clamp(15px, 2.5vw, 18px);
+    font-weight: 500;
+    line-height: 1.55;
+    margin-bottom: 28px;
+    min-height: 60px;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(233,69,96,0.07); }
+  .opt-btn:active:not(:disabled) { transform: scale(0.985); }
+  .opt-letter {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+  }
+  .opt-btn.correct { border-color: var(--correct); background: rgba(46,204,113,0.1); }
+  .opt-btn.correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt-btn.wrong { border-color: var(--wrong); background: rgba(231,76,60,0.1); }
+  .opt-btn.wrong .opt-letter { background: var(--wrong); color: #fff; }
+  .opt-btn:disabled { cursor: default; }
+  .feedback-bar {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.4;
+  }
+  .feedback-bar.show { display: flex; }
+  .feedback-bar.correct { background: rgba(46,204,113,0.12); color: var(--correct); }
+  .feedback-bar.wrong { background: rgba(231,76,60,0.12); color: #ff8080; }
+  .btn-next {
+    margin-top: 24px;
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 32px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+    transition: opacity 0.2s;
+  }
+  .btn-next:hover { opacity: 0.85; }
+
+  /* RESULT SCREEN */
+  #result { display: none; text-align: center; }
+  .result-circle {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    margin: 0 auto 28px;
+    background: conic-gradient(var(--accent) 0%, rgba(233,69,96,0.15) 0%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .result-circle::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+  .result-pct {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+  }
+  #result h2 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  #result .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 15px; }
+  .result-stats {
+    display: flex; justify-content: center; gap: 20px; margin-bottom: 36px; flex-wrap: wrap;
+  }
+  .rs-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 24px;
+    min-width: 110px;
+  }
+  .rs-box .num { font-family: 'Unbounded', sans-serif; font-size: 24px; font-weight: 700; }
+  .rs-box.green .num { color: var(--correct); }
+  .rs-box.red .num { color: var(--wrong); }
+  .rs-box .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .grade-badge {
+    display: inline-block;
+    padding: 8px 22px;
+    border-radius: 99px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 32px;
+  }
+  .btn-restart {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 40px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 12px;
+    transition: opacity 0.2s;
+  }
+  .btn-restart:hover { opacity: 0.85; }
+  .btn-review {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 40px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .btn-review:hover { border-color: var(--muted); }
+
+  /* REVIEW SCREEN */
+  #review { display: none; }
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .review-item.correct-r { border-color: rgba(46,204,113,0.3); }
+  .review-item.wrong-r { border-color: rgba(231,76,60,0.3); }
+  .review-q { font-size: 14px; font-weight: 500; margin-bottom: 10px; line-height: 1.5; }
+  .review-your { font-size: 13px; color: var(--wrong); margin-bottom: 4px; }
+  .review-correct { font-size: 13px; color: var(--correct); }
+  .review-ok { font-size: 13px; color: var(--correct); }
+  .btn-back {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 24px;
+  }
+  .btn-back:hover { border-color: var(--muted); }
+
+  @media (max-width: 600px) {
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+    }
+    .logo { font-size: 18px; }
+    .progress-wrap { margin-left: 0; max-width: 100%; width: 100%; }
+
+    main { padding: 20px 14px; }
+
+    #welcome { padding: 28px 0; }
+    .welcome-icon { font-size: 52px; margin-bottom: 16px; }
+    #welcome h1 { font-size: clamp(20px, 6vw, 28px); }
+    #welcome p { font-size: 14px; margin-bottom: 24px; }
+
+    .stat-row { gap: 12px; margin-bottom: 28px; }
+    .stat-box { padding: 12px 16px; }
+    .stat-box .num { font-size: 22px; }
+    .stat-box .lbl { font-size: 11px; }
+
+    .btn-start {
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 14px;
+    }
+
+    .q-meta { margin-bottom: 14px; }
+    .q-text { font-size: 15px; margin-bottom: 20px; min-height: unset; }
+
+    .options { gap: 8px; }
+    .opt-btn {
+      padding: 14px 12px;
+      font-size: 14px;
+      gap: 10px;
+    }
+    .opt-letter { width: 26px; height: 26px; font-size: 11px; }
+
+    .feedback-bar { font-size: 13px; padding: 12px 14px; }
+
+    .btn-next {
+      width: 100%;
+      margin-top: 16px;
+      padding: 15px 20px;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .result-circle { width: 110px; height: 110px; margin-bottom: 20px; }
+    .result-pct { font-size: 24px; }
+    #result h2 { font-size: 20px; }
+    #result .subtitle { font-size: 14px; margin-bottom: 20px; }
+    .grade-badge { font-size: 13px; margin-bottom: 20px; }
+
+    .result-stats { gap: 10px; margin-bottom: 24px; }
+    .rs-box { padding: 12px 14px; min-width: 80px; }
+    .rs-box .num { font-size: 20px; }
+    .rs-box .lbl { font-size: 11px; }
+
+    .btn-restart,
+    .btn-review {
+      display: block;
+      width: 100%;
+      margin-right: 0;
+      margin-bottom: 10px;
+      padding: 14px 20px;
+      font-size: 13px;
+    }
+
+    .btn-back { padding: 11px 20px; font-size: 12px; margin-bottom: 16px; }
+    .review-item { padding: 14px; }
+    .review-q { font-size: 13px; }
+    .review-your, .review-correct, .review-ok { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">DB<span>Quiz</span></div>
+  <div class="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progBar"></div></div>
+    <div class="progress-label" id="progLabel">0 / 60</div>
+  </div>
+</header>
+
+<main>
+  <!-- WELCOME -->
+  <div id="welcome">
+    <span class="welcome-icon">🗄️</span>
+    <h1>Деректер қоры<br><span>Тест</span></h1>
+    <p>SQL, реляциялық модель, ДҚБЖ және жобалау бойынша<br>60 сұрақтан тұратын тест</p>
+    <div class="stat-row">
+      <div class="stat-box"><div class="num">60</div><div class="lbl">Сұрақ</div></div>
+      <div class="stat-box"><div class="num">5</div><div class="lbl">Вариант</div></div>
+      <div class="stat-box"><div class="num">∞</div><div class="lbl">Уақыт</div></div>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">Бастау →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="q-meta">
+      <div class="q-num" id="qNum">Сұрақ 1 / 60</div>
+      <div class="q-score" id="qScore">✓ 0 &nbsp; ✗ 0</div>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback-bar" id="feedback"></div>
+    <button class="btn-next" id="btnNext" onclick="nextQ()">Келесі →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div class="result-circle" id="reCircle">
+      <div class="result-pct" id="rePct">0%</div>
+    </div>
+    <h2 id="reTitle">Жарайсың!</h2>
+    <p class="subtitle" id="reSub"></p>
+    <div class="grade-badge" id="reBadge"></div>
+    <div class="result-stats">
+      <div class="rs-box green"><div class="num" id="reCorrect">0</div><div class="lbl">Дұрыс</div></div>
+      <div class="rs-box red"><div class="num" id="reWrong">0</div><div class="lbl">Қате</div></div>
+      <div class="rs-box"><div class="num" id="reTotal">60</div><div class="lbl">Барлығы</div></div>
+    </div>
+    <div>
+      <button class="btn-restart" onclick="startQuiz()">Қайтадан</button>
+      <button class="btn-review" onclick="showReview()">Қателерді көру</button>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div id="review">
+    <button class="btn-back" onclick="showResult()">← Нәтижеге оралу</button>
+    <div id="reviewList"></div>
+  </div>
+</main>
+
+<script>
+const questions = [
+  { q: "Деректер базасын жобалаудың алғашқы кезеңі?", opts: ["Кесте толтыру","Пәндік облысты талдау","Сервер орнату","SQL жазу","Индекс құру"], ans: 1 },
+  { q: "ДҚБЖ-нің негізгі мақсаты қандай?", opts: ["Интерфейс құру","Бағдарлама жазу","Пайдаланушыларға деректердің абстракциялық көрінісін ұсыну","Деректерді жою","Желіні басқару"], ans: 2 },
+  { q: "pg_dump утилитасы не үшін қолданылады?", opts: ["Индекс жасау үшін","Кесте құру үшін","Деректерді жою үшін","Деректерді өзгерту үшін","Деректер базасының резервтік көшірмесін жасау үшін"], ans: 4 },
+  { q: "Сыртқы деңгей (External level) нені сипаттайды?", opts: ["Желілік хаттамаларды","Жүйенің ішкі кодын","Сервер архитектурасын","Деректердің физикалық орналасуын","Пайдаланушыға көрінетін деректер көрінісін"], ans: 4 },
+  { q: "Берілген кесте: products(id, category, price). Әр категория бойынша орташа бағаны шығару:", opts: ["SELECT price FROM products GROUP category;","GET products GROUP category;","SELECT category AVG(price);","SELECT category, AVG(price) FROM products GROUP BY category;","SELECT AVG(price) FROM products;"], ans: 3 },
+  { q: "INNER JOIN қолданылатын жағдай қайсысы?", opts: ["Тек ортақ деректер қажет болғанда","Барлық деректер қажет болғанда","Тек бір кесте қолданғанда","Деректерді жойғанда","Индекс құрғанда"], ans: 0 },
+  { q: "AVG функциясы не үшін қолданылады?", opts: ["Кесте құру үшін","Деректерді жою үшін","Орташа мәнді есептеу үшін","Жолдарды санау үшін","Қосынды табу үшін"], ans: 2 },
+  { q: "SQL алғаш рет қай жылы стандарт ретінде қабылданды?", opts: ["1987","1989","1985","2000","1995"], ans: 0 },
+  { q: "STORE командасы не істейді?", opts: ["Мәліметті жаңартады","Жаңа жазбаны деректер базасына енгізеді","Байланысты үзіп тастайды","Мәліметті оқиды","Мәліметті жояды"], ans: 1 },
+  { q: "DQL операторына қайсысы жатады?", opts: ["UPDATE","INSERT","CREATE","DELETE","SELECT"], ans: 4 },
+  { q: "Сыртқы кілттің қызметі?", opts: ["График салу","Деректерді шифрлау","Деректерді жою","Кестелер арасындағы байланысты орнату","Кестені өшіру"], ans: 3 },
+  { q: "Берілген кесте: users(id, name). Жаңа пайдаланушы қосу үшін дұрыс сұрауды таңдаңыз.", opts: ["CREATE INTO users VALUES (1, 'Asem');","PUT INTO users VALUES (1, 'Asem');","INSERT users (1, 'Asem');","ADD INTO users VALUES (1, 'Asem');","INSERT INTO users (id, name) VALUES (1, 'Asem');"], ans: 4 },
+  { q: "SELECT DISTINCT name FROM students сұранысы не істейді?", opts: ["Кестені жояды","Индекс құрады","Барлық аттарды қайталап шығарады","Қайталанбайтын аттарды ғана шығарады","Деректерді өзгертеді"], ans: 3 },
+  { q: "Атрибуттың қабылдай алатын мәндер жиыны?", opts: ["Кортеж","Байланыс","Домен","Кесте","Схема"], ans: 2 },
+  { q: "Реляциялық деректер қорының негізгі ұғымы?", opts: ["Кесте (relation)","Бағдарлама","Сурет","Процессор","Файл түрі"], ans: 0 },
+  { q: "Реляциялық модельде деректер қалай ұсынылады?", opts: ["Код түрінде","Кестелер түрінде","Аудио түрінде","Диаграмма түрінде","Сурет түрінде"], ans: 1 },
+  { q: "SELECT * FROM students LIMIT 5 сұранысы не істейді?", opts: ["5 жазбаны жояды","Барлық жазбаларды шығарады","Кесте құрады","Алғашқы 5 жазбаны шығарады","Деректерді жаңартады"], ans: 3 },
+  { q: "ДҚБЖ утилиталары не үшін қажет?", opts: ["Графика жасау үшін","Ойын ойнау үшін","Интернетке қосылу үшін","Резервтік көшіру, қалпына келтіру және әкімшілік жұмыстар үшін","Бағдарлама жазу үшін"], ans: 3 },
+  { q: "Концептуалды модель нені сипаттайды?", opts: ["Бағдарлама кодын","Деректердің жалпы логикалық құрылымын және байланыстарын","Деректердің физикалық орналасуын","Интерфейсті","Желіні"], ans: 1 },
+  { q: "NOT NULL шектеуі нені білдіреді?", opts: ["Өріс тек бос болуы керек","Деректер жойылады","Индекс құрылады","Өріс бос болмауы керек","Кесте жойылады"], ans: 3 },
+  { q: "Кестедегі барлық мәндер қандай болуы керек?", opts: ["Атомарлы","Кездейсоқ","Бос","Күрделі","Қайталанатын"], ans: 0 },
+  { q: "ER-модель не үшін қолданылады?", opts: ["Деректерді жою үшін","Код жазу үшін","Желі құру үшін","Деректер қорын жобалау үшін","Компьютер жөндеу үшін"], ans: 3 },
+  { q: "PostgreSQL деректер құрылымының ерекшелігі қандай?", opts: ["Желісіз жұмыс істейді","Тек мәтіндік редактор","Тек файлдармен жұмыс істейді","Реляциялық модельге негізделген және кеңейтілетін жүйе","Тек графикаға арналған"], ans: 3 },
+  { q: "Берілген кестелер: students(id, name), grades(student_id, grade). JOIN қолдану арқылы студенттің аты мен бағасын шығару:", opts: ["SELECT name grade FROM students grades;","SELECT name, grade FROM students, grades;","GET students.name grades.grade;","SELECT students JOIN grades;","SELECT students.name, grades.grade FROM students JOIN grades ON students.id = grades.student_id;"], ans: 4 },
+  { q: "DDL аббревиатурасы нені білдіреді?", opts: ["Data Design Line","Data Description Level","Data Definition Language","Digital Database Logic","Document Definition Layer"], ans: 2 },
+  { q: "Резервтік көшірудің бір түрі қандай?", opts: ["SELECT сұранысы","JOIN операциясы","Инкременттік backup","UPDATE командасы","DELETE операциясы"], ans: 2 },
+  { q: "ORDER BY не істейді?", opts: ["Деректерді жояды","Деректерді қосады","Кесте құрады","Индекс жояды","Нәтижені белгілі бір ретпен сұрыптайды"], ans: 4 },
+  { q: "DISCONNECT командасының қызметі?", opts: ["Мәліметті көшіру","Жаңа байланыс құру","Мәліметті сақтау","Жазбалар арасындағы байланысты үзу","Мәліметті оқу"], ans: 3 },
+  { q: "JOIN операторында ON не үшін қолданылады?", opts: ["Сұрыптау үшін","Деректерді жою үшін","Шектеу қою үшін","Кесте құру үшін","Кестелерді қандай шартпен біріктіру керектігін көрсету үшін"], ans: 4 },
+  { q: "ER-модель не үшін қолданылады? (2)", opts: ["Желі құру үшін","Код жазу үшін","Компьютер жөндеу үшін","Деректер қорын жобалау үшін","Деректерді жою үшін"], ans: 3 },
+  { q: "Деректер базасын басқару жүйесі не үшін қажет?", opts: ["Вирус қорғау үшін","Қолданбалы бағдарламаларды құру үшін","Желі параметрлерін баптау үшін","Деректерді сақтау, іздеу және өңдеу үшін","Файлдарды архивтеу үшін"], ans: 3 },
+  { q: "Берілген кестелер: customers(id, name), orders(customer_id, amount). Әр клиенттің аты мен тапсырыс саны:", opts: ["SELECT customers.name, COUNT(orders.customer_id) FROM customers JOIN orders ON customers.id = orders.customer_id GROUP BY customers.name;","SELECT name, COUNT(*) FROM customers;","SELECT * FROM customers GROUP BY name;","SELECT customers, orders COUNT;","GET customers COUNT orders;"], ans: 0 },
+  { q: "Ішкі деңгей (Internal level) нені сипаттайды?", opts: ["Бағдарламалау тілін","Желілік қосылымды","Тек логикалық модельді","Пайдаланушы интерфейсін","Деректердің физикалық сақтау тәсілін"], ans: 4 },
+  { q: "Деректер схемасы дегеніміз не?", opts: ["Графикалық интерфейс","Желілік протокол","Операциялық жүйе","Бағдарламалау тілі","Деректер базасының құрылымын сипаттайтын модель"], ans: 4 },
+  { q: "DML тілінің негізгі мақсаты?", opts: ["Деректермен жұмыс істеу (қосу, өзгерту, жою, іздеу)","Қауіпсіздік жүйесін құру","Деректер базасын анықтау","Есептерді форматтау","Аппараттық ресурстарды басқару"], ans: 0 },
+  { q: "ALTER операторы не істейді?", opts: ["Кестені жою","Кесте құрылымын өзгерту","Деректерді көру","Деректерді енгізу","Бағдарлама іске қосу"], ans: 1 },
+  { q: "ER-диаграмма не үшін қолданылады?", opts: ["Бағдарлама жазу үшін","Кесте жою үшін","Желіні басқару үшін","Сущность, атрибут және байланыстарды көрсету үшін","Деректерді жою үшін"], ans: 3 },
+  { q: "SQL3 стандарты қай жылы қабылданды?", opts: ["1997","1995","2001","1992","1999"], ans: 4 },
+  { q: "Таңдау (селекция) операциясының мақсаты?", opts: ["Баған қосу","Кестені жою","Кілтті өзгерту","Индекс құру","Белгілі шартқа сай жолдарды алу"], ans: 4 },
+  { q: "Көпкестелі сұраныстың мақсаты қандай?", opts: ["Кесте құру","Деректерді жаңарту","Бірнеше кестеден деректерді біріктіріп шығару","Индекс жасау","Бір кестені жою"], ans: 2 },
+  { q: "Кестедегі өріс (field) дегеніміз не?", opts: ["Желі","Бірнеше кесте","Толық кесте","Бағдарлама","Деректердің бір атрибутын сипаттайтын бағана"], ans: 4 },
+  { q: "Деректер қоры дегеніміз не?", opts: ["Графикалық редактор","Тек мәтіндік файл","Компьютерлік ойын","Операциялық жүйе","Өзара байланысты деректердің ұйымдастырылған жиынтығы"], ans: 4 },
+  { q: "REVOKE командасы не үшін қолданылады?", opts: ["Кесте құру үшін","Құқықтарды қайтарып алу үшін","Деректерді енгізу үшін","Индекс жасау үшін","Құқық беру үшін"], ans: 1 },
+  { q: "Симплексті арна қандай?", opts: ["Екі бағытта бір уақытта береді","Деректерді сақтайды","Тек бір бағытта деректерді береді","Интерфейс жасайды","Кезекпен береді"], ans: 2 },
+  { q: "Басты кілттің (Primary Key) қызметі қандай?", opts: ["Кестелерді біріктіру","Деректерді сұрыптау","Кестені форматтау","Файл өлшемін азайту","Жазбаны бірегей анықтау"], ans: 4 },
+  { q: "Логикалық интерфейс нені анықтайды?", opts: ["Деректер алмасу ережелерін (протоколды)","Компьютер құрылымын","Кабель түрін","Бағдарламалау тілін","Деректерді сақтау орнын"], ans: 0 },
+  { q: "Протокол дегеніміз не?", opts: ["Бағдарлама","Деректерді жою алгоритмі","Деректер алмасуды реттейтін ережелер жиынтығы","Интерфейс түрі","Кесте"], ans: 2 },
+  { q: "Проекция операциясы нені таңдайды?", opts: ["Барлық жолдарды","Дерекқорды","Атрибуттарды","Байланысты","Барлық кестелерді"], ans: 2 },
+  { q: "Дерекқорлардың пайда болуына негіз болған алғашқы есептеу техникасының негізгі қолдану саласы қайсы?", opts: ["Желілік байланысты ұйымдастыру","Графикалық интерфейстерді құру","Веб қосымшалар жасау","Мультимедианы өңдеу","Сандық есептеулерді автоматтандыру"], ans: 4 },
+  { q: "Реляциялық модельде негізгі құрылымдық элемент не?", opts: ["Граф","Кесте","Ағаш","Файл","Объект"], ans: 1 },
+  { q: "ALTER TABLE операторы қандай әрекет орындайды?", opts: ["Кестеге бағана қосу немесе өзгерту","Деректерді көру","Желі баптау","Деректерді енгізу","Кестені жою"], ans: 0 },
+  { q: "DML аббревиатурасының толық атауы?", opts: ["Data Manipulation Language","Data Message Layer","Data Modeling Logic","Dynamic Markup Language","Database Management Level"], ans: 0 },
+  { q: "Кестенің жолы қалай аталады?", opts: ["Кортеж","Индекс","Схема","Атрибут","Домен"], ans: 0 },
+  { q: "COMMIT операторы не істейді?", opts: ["Индекс жасайды","Деректерді көреді","Кесте құрады","Транзакция өзгерістерін сақтайды","Деректерді жояды"], ans: 3 },
+  { q: "DISTINCT қандай қызмет атқарады?", opts: ["Индекс жасайды","Қайталанатын мәндерді жояды","Деректерді қосады","Деректерді сұрыптайды","Кесте жояды"], ans: 1 },
+  { q: "Деректер қорын жобалау дегеніміз не?", opts: ["Интерфейс құру","Деректерді жою","Деректерді ұйымдастыру және басқару процесі","Желіні басқару","Бағдарлама жазу"], ans: 2 },
+  { q: "Кестенің бағаны қалай аталады?", opts: ["Кортеж","Кілт","Атрибут","Байланыс","Жазба"], ans: 2 },
+  { q: "ORDER BY ASC нені білдіреді?", opts: ["Деректерді жаңарту","Деректерді жою","Кему ретімен сұрыптау","Өсу ретімен сұрыптау","Индекс құру"], ans: 3 },
+  { q: "Көппайдаланушылық дегеніміз не?", opts: ["Бағдарлама жазу","Бір уақытта бірнеше қолданушының жүйемен жұмыс істеуі","Деректерді жою","Бір қолданушының жұмыс істеуі","Кесте құру"], ans: 1 },
+  { q: "VARCHAR(n) типінің ерекшелігі қандай?", opts: ["Ұзындығы тұрақты","Сандық мән","Айнымалы ұзындықтағы мәтін","Күнді сақтайды","Тек бір таңба"], ans: 2 }
+];
+
+const LETTERS = ['A','B','C','D','E'];
+let current = 0, score = 0, wrong = 0, userAnswers = [];
+let shuffled = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  shuffled = shuffle(questions);
+  current = 0; score = 0; wrong = 0; userAnswers = [];
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('review').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  renderQ();
+}
+
+function renderQ() {
+  const q = shuffled[current];
+  document.getElementById('qNum').textContent = `Сұрақ ${current+1} / ${shuffled.length}`;
+  document.getElementById('qScore').textContent = `✓ ${score}   ✗ ${wrong}`;
+  document.getElementById('qText').textContent = q.q;
+  const pct = ((current) / shuffled.length * 100).toFixed(1);
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = `${current} / ${shuffled.length}`;
+
+  const optDiv = document.getElementById('options');
+  optDiv.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${LETTERS[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectOpt(i);
+    optDiv.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback-bar';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('btnNext').style.display = 'none';
+}
+
+function selectOpt(idx) {
+  const q = shuffled[current];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+  userAnswers.push({ q: q.q, opts: q.opts, ans: q.ans, chosen: idx });
+
+  if (idx === q.ans) {
+    btns[idx].classList.add('correct');
+    score++;
+    fb.className = 'feedback-bar correct show';
+    fb.textContent = '✓ Дұрыс!';
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    wrong++;
+    fb.className = 'feedback-bar wrong show';
+    fb.textContent = `✗ Қате. Дұрыс жауап: ${LETTERS[q.ans]}. ${q.opts[q.ans]}`;
+  }
+
+  document.getElementById('btnNext').style.display = 'inline-block';
+  document.getElementById('btnNext').textContent = current + 1 < shuffled.length ? 'Келесі →' : 'Нәтиже →';
+}
+
+function nextQ() {
+  current++;
+  if (current < shuffled.length) {
+    renderQ();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('review').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  const total = shuffled.length;
+  const pct = Math.round(score / total * 100);
+
+  document.getElementById('progBar').style.width = '100%';
+  document.getElementById('progLabel').textContent = `${total} / ${total}`;
+
+  const circle = document.getElementById('reCircle');
+  circle.style.background = `conic-gradient(var(--accent) ${pct * 3.6}deg, rgba(233,69,96,0.12) 0deg)`;
+  document.getElementById('rePct').textContent = pct + '%';
+  document.getElementById('reCorrect').textContent = score;
+  document.getElementById('reWrong').textContent = wrong;
+  document.getElementById('reTotal').textContent = total;
+
+  let grade, title, sub, color;
+  if (pct >= 90) { grade = '5'; title = 'Керемет! 🏆'; sub = 'Тамаша нәтиже! Тақырыпты жақсы білесің.'; color = '#2ecc71'; }
+  else if (pct >= 75) { grade = '4'; title = 'Жарайсың! 👍'; sub = 'Жақсы нәтиже. Бірнеше тақырыпты қайталасаң болады.'; color = '#3498db'; }
+  else if (pct >= 55) { grade = '3'; title = 'Орташа 📚'; sub = 'Негізін білесің, бірақ тереңірек оқу керек.'; color = '#f39c12'; }
+  else { grade = '2'; title = 'Қайтадан оқы 📖'; sub = 'Тақырыпты жан-жақты қайталаған жөн.'; color = '#e74c3c'; }
+
+  document.getElementById('reTitle').textContent = title;
+  document.getElementById('reSub').textContent = sub;
+  const badge = document.getElementById('reBadge');
+  badge.textContent = `Баға: ${grade}`;
+  badge.style.background = color + '22';
+  badge.style.color = color;
+  badge.style.border = '1px solid ' + color + '55';
+}
+
+function showReview() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('review').style.display = 'block';
+  const list = document.getElementById('reviewList');
+  list.innerHTML = '';
+  userAnswers.forEach((ua, i) => {
+    const div = document.createElement('div');
+    const ok = ua.chosen === ua.ans;
+    div.className = 'review-item ' + (ok ? 'correct-r' : 'wrong-r');
+    let inner = `<div class="review-q">${i+1}. ${ua.q}</div>`;
+    if (ok) {
+      inner += `<div class="review-ok">✓ ${LETTERS[ua.chosen]}. ${ua.opts[ua.chosen]}</div>`;
+    } else {
+      inner += `<div class="review-your">✗ Сіздің жауабыңыз: ${LETTERS[ua.chosen]}. ${ua.opts[ua.chosen]}</div>`;
+      inner += `<div class="review-correct">✓ Дұрыс жауап: ${LETTERS[ua.ans]}. ${ua.opts[ua.ans]}</div>`;
+    }
+    div.innerHTML = inner;
+    list.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
